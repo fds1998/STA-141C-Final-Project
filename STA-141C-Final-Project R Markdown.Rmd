@@ -6,13 +6,40 @@ output: html_document
 ---
 
 ```{r}
-Metro_Interstate_Traffic_Volume <- read.csv("~/Metro_Interstate_Traffic_Volume.csv/Metro_Interstate_Traffic_Volume.csv")
+Metro_Interstate_Traffic_Volume <- read.csv("Metro_Interstate_Traffic_Volume.csv")
 attach(Metro_Interstate_Traffic_Volume)
 library(dplyr)
 library(ggpubr)
 library(tidyr)
 library(tidyverse)
 library(ggplot2)
+```
+
+```{r}
+library(car)
+
+library(GGally)
+
+Metro <- read_csv("Metro_Interstate_Traffic_Volume.csv")
+New_Metro = separate(Metro, date_time, c("date","time"), sep = " ", remove = TRUE,
+  convert = FALSE, extra = "warn", fill = "warn")
+New_Metro = separate(New_Metro, date, c("year","month","day"), sep = "-", remove = TRUE,
+  convert = FALSE, extra = "warn", fill = "warn")
+summary(New_Metro)
+
+##Linear Model Selection
+lm1 = lm(traffic_volume~ temp + clouds_all + as.factor(weather_main),data = New_Metro)
+summary(lm1)
+###Factor Time is significant
+lm2 = lm(traffic_volume~ temp + clouds_all + as.factor(time),data = New_Metro)
+summary(lm2)
+plot(lm2)
+
+lm3 = lm(traffic_volume~ temp + clouds_all + as.factor(time) + as.factor(weather_main),data = New_Metro)
+summary(lm3)
+plot(lm3)
+hist(lm3$residuals)
+ggcorr(New_Metro)
 ```
 
 ```{r}
