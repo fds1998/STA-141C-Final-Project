@@ -1,0 +1,118 @@
+---
+title: "STA 141C Final Project R Markdown"
+author: "Yutian Yang"
+date: "3/10/2020"
+output: html_document
+---
+
+```{r}
+Metro_Interstate_Traffic_Volume <- read.csv("~/Metro_Interstate_Traffic_Volume.csv/Metro_Interstate_Traffic_Volume.csv")
+attach(Metro_Interstate_Traffic_Volume)
+library(dplyr)
+library(ggpubr)
+library(tidyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+Metro <- separate(Metro_Interstate_Traffic_Volume, date_time, c("date","time"), sep = " ", remove = TRUE, convert = FALSE, extra = "warn", fill = "warn")
+
+Metro <- separate(Metro, date, c("year","month","date"), sep = "-", remove = TRUE, convert = FALSE, extra = "warn", fill = "warn")
+
+ggdensity(Metro$traffic_volume, 
+          main = "Density plot of tooth length",
+          xlab = "Traffic Volume")
+
+ggqqplot(Metro$traffic_volume)
+```
+
+```{r}
+Metro %>%
+  group_by(time)%>%
+  filter(!is.na(traffic_volume)) %>%
+  summarize(avg = mean(traffic_volume))%>%
+  arrange(desc(avg))
+
+Metro %>%
+  group_by(month)%>%
+  filter(!is.na(traffic_volume)) %>%
+  summarize(avg = mean(traffic_volume))%>%
+  arrange(desc(avg))
+
+Metro %>%
+  group_by(year)%>%
+  filter(!is.na(traffic_volume)) %>%
+  summarize(avg = mean(traffic_volume))%>%
+  arrange(desc(avg))
+
+Metro %>%
+  group_by(weather_main)%>%
+  filter(!is.na(traffic_volume)) %>%
+  summarize(avg = mean(traffic_volume))%>%
+  arrange(desc(avg))
+
+```
+
+```{r}
+  
+Metro_coef <- Metro %>%
+  group_split(as.factor(month)) %>%
+  map(~lm(traffic_volume~as.factor(time),data = .)) %>%
+  map(function(model) model$coefficients) 
+
+
+model1 = lm(Metro$traffic_volume~Metro$time)
+summary(aov(model1))
+
+model2 = lm(Metro$traffic_volume~Metro$weather_main)
+summary(aov(model2))
+```
+
+```{r}
+library(parallel)
+cl = makeCluster(4)
+B = 50
+
+singleBoots <- function(i){
+  index = sample(x = seq_len(n), size = n, replace = TRUE)
+  data_star = data[index,]
+  mean(data_star$traffic_volume)
+}
+clusterEvalQ(cl,{
+  library(tidyverse)
+  data <- read_csv("~/Metro_Interstate_Traffic_Volume.csv/Metro_Interstate_Traffic_Volume.csv")
+  n <- length(data$traffic_volume)
+  mean(data$traffic_volume)
+})
+
+mean_traffic_volumn = parSapply(cl, seq_len(B),singleBoots)
+mean_traffic_volumn %>% quantile(c(0.025,0.975))
+
+stopCluster(cl)
+```
+
+```{r}
+library(furrr)
+data <- read_csv("~/Metro_Interstate_Traffic_Volume.csv/Metro_Interstate_Traffic_Volume.csv")
+m <- 10
+n <- length(data$traffic_volume)
+groups <- sample(seq_len(m),n,replace = TRUE)
+map(seq_len(m), ~write_csv(data[groups ==.,],str_c("part",.,".csv")))
+
+plan(multiprocess,workers = 4)
+B = 5
+
+singleBoots <- function(i, ind_part){
+  subsample = read_csv(str_c("part",ind_part,".csv")) 
+  mean(subsample$traffic_volume)
+}
+
+ci_list = future_map(seq_len(m),~{
+  map_dbl(seq_len(B),singleBoots,ind_part =.) %>%
+quantile(c(0.025,0.975))
+})
+
+reduce(ci_list, `+`) / length(ci_list)
+
+```
