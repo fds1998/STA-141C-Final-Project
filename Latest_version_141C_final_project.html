@@ -381,11 +381,19 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>Metro_Interstate_Traffic_Volume &lt;- read.csv(&quot;Metro_Interstate_Traffic_Volume.csv&quot;)
-attach(Metro_Interstate_Traffic_Volume)
-library(dplyr)</code></pre>
+<pre class="r"><code>library(car)</code></pre>
+<pre><code>## Loading required package: carData</code></pre>
+<pre class="r"><code>library(GGally)</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre class="r"><code>library(dplyr)</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:GGally&#39;:
+## 
+##     nasa</code></pre>
+<pre><code>## The following object is masked from &#39;package:car&#39;:
+## 
+##     recode</code></pre>
 <pre><code>## The following objects are masked from &#39;package:stats&#39;:
 ## 
 ##     filter, lag</code></pre>
@@ -393,7 +401,6 @@ library(dplyr)</code></pre>
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
 <pre class="r"><code>library(ggpubr)</code></pre>
-<pre><code>## Loading required package: ggplot2</code></pre>
 <pre><code>## Loading required package: magrittr</code></pre>
 <pre class="r"><code>library(tidyr)</code></pre>
 <pre><code>## 
@@ -410,25 +417,11 @@ library(dplyr)</code></pre>
 ## x tidyr::extract()   masks magrittr::extract()
 ## x dplyr::filter()    masks stats::filter()
 ## x dplyr::lag()       masks stats::lag()
-## x purrr::set_names() masks magrittr::set_names()</code></pre>
-<pre class="r"><code>library(ggplot2)</code></pre>
-<pre class="r"><code>library(car)</code></pre>
-<pre><code>## Loading required package: carData</code></pre>
-<pre><code>## 
-## Attaching package: &#39;car&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:purrr&#39;:
-## 
-##     some</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     recode</code></pre>
-<pre class="r"><code>library(GGally)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;GGally&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     nasa</code></pre>
-<pre class="r"><code>##Import dataset and split date into month, day, and time
+## x dplyr::recode()    masks car::recode()
+## x purrr::set_names() masks magrittr::set_names()
+## x purrr::some()      masks car::some()</code></pre>
+<pre class="r"><code>library(ggplot2)
+##Import dataset and split date into month, day, and time
 Metro &lt;- read_csv(&quot;Metro_Interstate_Traffic_Volume.csv&quot;)</code></pre>
 <pre><code>## Parsed with column specification:
 ## cols(
@@ -882,7 +875,7 @@ summary(lm5)</code></pre>
 ##         data$clouds_all
 ## }</code></pre>
 <pre><code>##     2.5%    97.5% 
-## 2525.483 3752.023</code></pre>
+## 2525.705 3751.769</code></pre>
 <pre><code>## [[1]]
 ## function (data) 
 ## {
@@ -911,7 +904,7 @@ summary(lm5)</code></pre>
 ##     coefficient = model$coefficients[[1]]
 ## }</code></pre>
 <pre><code>##      2.5%     97.5% 
-## -3537.199 -2805.868</code></pre>
+## -3541.409 -2787.229</code></pre>
 <pre><code>## [[1]]
 ## function (data) 
 ## {
@@ -940,8 +933,9 @@ summary(lm5)</code></pre>
 ##     coefficient = model$coefficients[[2]]
 ## }</code></pre>
 <pre><code>##     2.5%    97.5% 
-## 20.88013 23.40373</code></pre>
-<pre class="r"><code>cl = makeCluster(4)
+## 20.83057 23.43510</code></pre>
+<pre class="r"><code>## Using parallelization to bootstrap for CI of coefficient of clouds coverage.
+cl = makeCluster(4)
 B = 1000
 coef_beta2 &lt;- function(data){
   model = lm(data$traffic_volume~data$temp+data$clouds_all)
@@ -991,7 +985,7 @@ clusterEvalQ(cl,{
 <pre class="r"><code>beta1_ci = parSapply(cl, seq_len(B),singleBoots)
 beta1_ci %&gt;% quantile(c(0.025,0.975))</code></pre>
 <pre><code>##     2.5%    97.5% 
-## 3.760884 4.660076</code></pre>
+## 3.729031 4.708801</code></pre>
 <pre class="r"><code>stopCluster(cl)</code></pre>
 
 

@@ -6,20 +6,13 @@ output: html_document
 ---
 
 ```{r}
-Metro_Interstate_Traffic_Volume <- read.csv("Metro_Interstate_Traffic_Volume.csv")
-attach(Metro_Interstate_Traffic_Volume)
+library(car)
+library(GGally)
 library(dplyr)
 library(ggpubr)
 library(tidyr)
 library(tidyverse)
 library(ggplot2)
-```
-
-
-```{r}
-library(car)
-library(GGally)
-
 ##Import dataset and split date into month, day, and time
 Metro <- read_csv("Metro_Interstate_Traffic_Volume.csv")
 New_Metro = separate(Metro, date_time, c("date","time"), sep = " ", remove = TRUE,
@@ -142,7 +135,7 @@ write_csv(Metro_without_time_weather,"Metro_without_time_weather.csv")
 
 ```{r,echo = FALSE}
 
-## Using parallelization to bootstrap
+## Using parallelization to bootstrap for CI of raffic volume
 library(parallel)
 cl = makeCluster(4)
 B = 1000
@@ -172,6 +165,8 @@ stopCluster(cl)
 ```
 
 ```{r,echo = FALSE}
+
+## Using parallelization to bootstrap for CI of intercept
 cl = makeCluster(4)
 B =1000
 coef_beta0 <- function(data){
@@ -198,6 +193,8 @@ stopCluster(cl)
 ```
 
 ```{r,echo = FALSE}
+
+## Using parallelization to bootstrap for CI of coefficient of temperature
 cl = makeCluster(4)
 B =1000
 coef_beta1 <- function(data){
@@ -224,6 +221,8 @@ stopCluster(cl)
 ```
 
 ```{r}
+
+## Using parallelization to bootstrap for CI of coefficient of clouds coverage.
 cl = makeCluster(4)
 B = 1000
 coef_beta2 <- function(data){
